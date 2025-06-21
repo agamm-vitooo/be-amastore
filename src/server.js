@@ -34,20 +34,22 @@ app.get('/', (req, res) => {
   res.json({ message: 'Express server + MongoDB is running 🚀' });
 });
 
-if (require.main === module) {
-  mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-  })
-    .then(() => {
-      console.log('✅ MongoDB connected');
-      app.listen(PORT, () => {
-        console.log(`🚀 Server running on http://localhost:${PORT}`);
-      });
-    })
-    .catch(err => {
-      console.error('❌ MongoDB connection error:', err.message);
-    });
-}
+let isConnected = false;
 
-module.exports = app; 
+const connectDB = async () => {
+  if (isConnected) return;
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    isConnected = true;
+    console.log('✅ MongoDB connected');
+  } catch (err) {
+    console.error('❌ MongoDB connection error:', err.message);
+  }
+};
+
+connectDB(); 
+
+module.exports = app;
