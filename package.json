@@ -1,7 +1,7 @@
 {
   "name": "be-amastore",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
     "test": "jest --runInBand",
     "dev": "node src/server.js"
