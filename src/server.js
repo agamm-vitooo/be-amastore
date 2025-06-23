@@ -14,7 +14,6 @@ const productRoutes = require('./router/product.route');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
@@ -35,6 +34,21 @@ app.get('/', (req, res) => {
 });
 
 let isConnected = false;
+
+app.get('/ping-db', (req, res) => {
+  const state = mongoose.connection.readyState;
+  res.json({
+    state,
+    status:
+      state === 0
+        ? '🔴 disconnected'
+        : state === 1
+        ? '🟢 connected'
+        : state === 2
+        ? '🟡 connecting'
+        : '🟠 disconnecting',
+  });
+});
 
 const connectDB = async () => {
   if (isConnected) return;
