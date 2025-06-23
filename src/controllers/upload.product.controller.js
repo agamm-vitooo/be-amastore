@@ -10,6 +10,9 @@ exports.uploadProduct = async (req, res) => {
   const ext = path.extname(file.originalname);
   const fileName = `products/${uuidv4()}${ext}`;
 
+  console.log('🧪 Upload to bucket:', process.env.B2_BUCKET_NAME);
+  console.log('🧪 Endpoint:', process.env.B2_ENDPOINT);
+
   const params = {
     Bucket: process.env.B2_BUCKET_NAME,
     Key: fileName,
