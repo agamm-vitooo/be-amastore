@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const morgan = require('morgan');
+const client = require('prom-client');
 const adminRoutes = require('./router/admin.route');
 const clientRoutes = require('./router/client.route');
 const profileRoutes = require('./router/profile.route');
@@ -28,6 +29,19 @@ app.use('/api/products', productRoutes);
 
 app.use('/api/upload', uploadAvatarRoute);
 app.use('/api/upload', uploadProductRoute);
+
+// Kumpulkan default metrics (CPU, memory, event loop, dll)
+client.collectDefaultMetrics();
+
+// Tambahkan endpoint untuk expose metrics
+app.get('/metrics', async (req, res) => {
+  try {
+    res.set('Content-Type', client.register.contentType);
+    res.end(await client.register.metrics());
+  } catch (ex) {
+    res.status(500).end(ex);
+  }
+});
 
 app.get('/', (req, res) => {
   res.json({ message: 'Express server + MongoDB is running 🚀' });
