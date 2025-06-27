@@ -7,7 +7,7 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 
-// Router
+// Routers
 const adminRoutes = require('../router/admin.route')
 const clientRoutes = require('../router/client.route')
 const profileRoutes = require('../router/profile.route')
@@ -17,18 +17,33 @@ const categoryRoutes = require('../router/category.route')
 const productRoutes = require('../router/product.route')
 
 const app = express()
+
+// Middleware
 app.use(cors())
 app.use(morgan('dev'))
 app.use(express.json())
 
-// DB connect
+// DB Connect — ini dipanggil per-request
 let isConnected = false
 const connectDB = async () => {
   if (isConnected) return
-  await mongoose.connect(process.env.MONGO_URI)
-  isConnected = true
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    })
+    isConnected = true
+    console.log('✅ MongoDB connected')
+  } catch (err) {
+    console.error('❌ MongoDB error', err)
+  }
 }
-connectDB()
+
+// Middleware DB connect sebelum setiap request
+app.use(async (req, res, next) => {
+  await connectDB()
+  next()
+})
 
 // Routes
 app.use('/api/admins', adminRoutes)
@@ -43,4 +58,5 @@ app.get('/', (req, res) => {
   res.json({ message: '✅ Serverless backend on Vercel' })
 })
 
+// Export untuk serverless
 module.exports = serverless(app)
