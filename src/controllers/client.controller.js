@@ -60,6 +60,17 @@ exports.loginClient = async (req, res) => {
   }
 };
 
+// GET /api/clients/:id - Admin get client detail
+exports.getClientById = async (req, res) => {
+  try {
+    const client = await Client.findById(req.params.id);
+    if (!client) return message.notFound(res, 'Client not found');
+    return message.success(res, 'Client found', client);
+  } catch (err) {
+    return message.error(res, err);
+  }
+};
+
 // GET /api/clients/me
 exports.getMe = async (req, res) => {
   try {

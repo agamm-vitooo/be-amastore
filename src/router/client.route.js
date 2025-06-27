@@ -19,6 +19,7 @@ const { protectAdmin } = require('../middleware/admin');
 router.get('/', protectAdmin, getAllClients);
 router.put('/:id', protectAdmin, updateClientById);     // ✅ Admin update client by ID
 router.delete('/:id', protectAdmin, deleteClientById);  // ✅ Admin delete client by ID
+router.get('/:id', protectAdmin, getClientById);
 
 // 👤 Public / client-authenticated routes
 router.post('/register', registerClient);
