@@ -15,6 +15,7 @@ const productRoutes = require('./router/product.route');
 dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
@@ -23,10 +24,8 @@ app.use(morgan('dev'));
 app.use('/api/admins', adminRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/profile', profileRoutes);
-
 app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
-
 app.use('/api/upload', uploadAvatarRoute);
 app.use('/api/upload', uploadProductRoute);
 
@@ -79,5 +78,9 @@ const connectDB = async () => {
 };
 
 connectDB(); 
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server is listening on port ${PORT}`);
+});
 
 module.exports = app;

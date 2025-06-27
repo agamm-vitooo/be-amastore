@@ -96,3 +96,41 @@ exports.updateMe = async (req, res) => {
     return message.error(res, err);
   }
 };
+
+// PUT /api/clients/:id - Admin update client
+exports.updateClientById = async (req, res) => {
+  try {
+    const { name, email, phone } = req.body;
+    const clientId = req.params.id;
+
+    const client = await Client.findByIdAndUpdate(
+      clientId,
+      { name, email, phone },
+      { new: true }
+    );
+
+    if (!client) return message.notFound(res, 'Client not found');
+
+    return message.success(res, 'Client updated by admin', {
+      id: client._id,
+      name: client.name,
+      email: client.email,
+      phone: client.phone
+    });
+  } catch (err) {
+    return message.error(res, err);
+  }
+};
+
+// DELETE /api/clients/:id - Admin delete client
+exports.deleteClientById = async (req, res) => {
+  try {
+    const client = await Client.findByIdAndDelete(req.params.id);
+    if (!client) return message.notFound(res, 'Client not found');
+
+    return message.success(res, 'Client deleted successfully');
+  } catch (err) {
+    return message.error(res, err);
+  }
+};
+
