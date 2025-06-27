@@ -17,34 +17,44 @@ const categoryRoutes = require('../router/category.route')
 const productRoutes = require('../router/product.route')
 
 const app = express()
-
-// Middleware
 app.use(cors())
 app.use(morgan('dev'))
 app.use(express.json())
 
-// DB Connect — akan dipanggil satu kali di setiap cold start
+// MongoDB connection with timeout
 let isConnected = false
+
 const connectDB = async () => {
   if (isConnected) return
-  console.time('MongoDB Connection')
+
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    })
+    console.time('MongoDB Connection')
+    await Promise.race([
+      mongoose.connect(process.env.MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+      }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('⏱️ MongoDB connection timeout')), 8000)
+      )
+    ])
     isConnected = true
-    console.timeEnd('MongoDB Connection') // ⏱️ log waktu koneksi
+    console.timeEnd('MongoDB Connection')
     console.log('✅ MongoDB connected')
   } catch (err) {
-    console.error('❌ MongoDB connection error:', err)
+    console.error('❌ DB Error:', err.message)
+    throw err
   }
 }
 
-// Middleware untuk memastikan DB connect
+// Call connectDB once before handling request
 app.use(async (req, res, next) => {
-  await connectDB()
-  next()
+  try {
+    await connectDB()
+    next()
+  } catch (err) {
+    res.status(500).json({ message: '❌ Failed to connect to MongoDB' })
+  }
 })
 
 // Routes
@@ -60,5 +70,4 @@ app.get('/', (req, res) => {
   res.json({ message: '✅ Serverless backend on Vercel' })
 })
 
-// Export untuk serverless function
 module.exports = serverless(app)
