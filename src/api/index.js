@@ -1,29 +1,27 @@
-// api/index.js
 const express = require('express')
 const serverless = require('serverless-http')
 const cors = require('cors')
 const morgan = require('morgan')
+const mongoose = require('mongoose')
+const dotenv = require('dotenv')
 
-const clientRoutes = require('../router/client.route')
+dotenv.config()
+
+// Router
 const adminRoutes = require('../router/admin.route')
+const clientRoutes = require('../router/client.route')
 const profileRoutes = require('../router/profile.route')
 const uploadAvatarRoute = require('../router/upload.avatar.route')
 const uploadProductRoute = require('../router/upload.product.route')
 const categoryRoutes = require('../router/category.route')
 const productRoutes = require('../router/product.route')
 
-const mongoose = require('mongoose')
-const dotenv = require('dotenv')
-dotenv.config()
-
 const app = express()
-
-// Middleware
 app.use(cors())
 app.use(morgan('dev'))
 app.use(express.json())
 
-// Connect DB (hindari connect berkali-kali)
+// DB connect
 let isConnected = false
 const connectDB = async () => {
   if (isConnected) return
@@ -41,9 +39,8 @@ app.use('/api/products', productRoutes)
 app.use('/api/upload', uploadAvatarRoute)
 app.use('/api/upload', uploadProductRoute)
 
-// Optional ping route
 app.get('/', (req, res) => {
-  res.json({ message: 'Serverless backend running on Vercel' })
+  res.json({ message: '✅ Serverless backend on Vercel' })
 })
 
-module.exports = require('serverless-http')(app)
+module.exports = serverless(app)

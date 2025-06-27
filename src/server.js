@@ -1,55 +1,48 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const morgan = require('morgan');
-const client = require('prom-client');
-const adminRoutes = require('./router/admin.route');
-const clientRoutes = require('./router/client.route');
-const profileRoutes = require('./router/profile.route');
-const uploadAvatarRoute = require('./router/upload.avatar.route');
-const uploadProductRoute = require('./router/upload.product.route');
-const categoryRoutes = require('./router/category.route');
-const productRoutes = require('./router/product.route');
+const express = require('express')
+const mongoose = require('mongoose')
+const dotenv = require('dotenv')
+const cors = require('cors')
+const morgan = require('morgan')
+const client = require('prom-client')
 
-dotenv.config();
+dotenv.config()
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+const app = express()
+const PORT = process.env.PORT || 3000
 
-app.use(express.json());
-app.use(cors());
-app.use(morgan('dev'));
+// Middleware
+app.use(express.json())
+app.use(cors())
+app.use(morgan('dev'))
 
-app.use('/api/admins', adminRoutes);
-app.use('/api/clients', clientRoutes);
-app.use('/api/profile', profileRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/upload', uploadAvatarRoute);
-app.use('/api/upload', uploadProductRoute);
+// Routes
+app.use('/api/admins', require('../src/router/admin.route'))
+app.use('/api/clients', require('../src/router/client.route'))
+app.use('/api/profile', require('../src/router/profile.route'))
+app.use('/api/categories', require('../src/router/category.route'))
+app.use('/api/products', require('../src/router/product.route'))
+app.use('/api/upload', require('../src/router/upload.avatar.route'))
+app.use('/api/upload', require('../src/router/upload.product.route'))
 
-// Kumpulkan default metrics (CPU, memory, event loop, dll)
-client.collectDefaultMetrics();
-
-// Tambahkan endpoint untuk expose metrics
+// Prometheus metrics
+client.collectDefaultMetrics()
 app.get('/metrics', async (req, res) => {
   try {
-    res.set('Content-Type', client.register.contentType);
-    res.end(await client.register.metrics());
+    res.set('Content-Type', client.register.contentType)
+    res.end(await client.register.metrics())
   } catch (ex) {
-    res.status(500).end(ex);
+    res.status(500).end(ex)
   }
-});
+})
 
+// Ping routes
 app.get('/', (req, res) => {
-  res.json({ message: 'Express server + MongoDB is running 🚀' });
-});
+  res.json({ message: '✅ Express server + MongoDB is running 🚀' })
+})
 
-let isConnected = false;
-
+let isConnected = false
 app.get('/ping-db', (req, res) => {
-  const state = mongoose.connection.readyState;
+  const state = mongoose.connection.readyState
   res.json({
     state,
     status:
@@ -59,28 +52,29 @@ app.get('/ping-db', (req, res) => {
         ? '🟢 connected'
         : state === 2
         ? '🟡 connecting'
-        : '🟠 disconnecting',
-  });
-});
+        : '🟠 disconnecting'
+  })
+})
 
+// Connect DB
 const connectDB = async () => {
-  if (isConnected) return;
+  if (isConnected) return
   try {
     await mongoose.connect(process.env.MONGO_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true
-    });
-    isConnected = true;
-    console.log('✅ MongoDB connected');
+    })
+    isConnected = true
+    console.log('✅ MongoDB connected')
   } catch (err) {
-    console.error('❌ MongoDB connection error:', err.message);
+    console.error('❌ MongoDB connection error:', err.message)
   }
-};
+}
+connectDB()
 
-connectDB(); 
-
+// Start server
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server is listening on port ${PORT}`);
-});
+  console.log(`🚀 Server is listening on port ${PORT}`)
+})
 
-module.exports = app;
+module.exports = app
