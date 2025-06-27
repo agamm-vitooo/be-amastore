@@ -23,23 +23,25 @@ app.use(cors())
 app.use(morgan('dev'))
 app.use(express.json())
 
-// DB Connect — ini dipanggil per-request
+// DB Connect — akan dipanggil satu kali di setiap cold start
 let isConnected = false
 const connectDB = async () => {
   if (isConnected) return
+  console.time('MongoDB Connection')
   try {
     await mongoose.connect(process.env.MONGO_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true
     })
     isConnected = true
+    console.timeEnd('MongoDB Connection') // ⏱️ log waktu koneksi
     console.log('✅ MongoDB connected')
   } catch (err) {
-    console.error('❌ MongoDB error', err)
+    console.error('❌ MongoDB connection error:', err)
   }
 }
 
-// Middleware DB connect sebelum setiap request
+// Middleware untuk memastikan DB connect
 app.use(async (req, res, next) => {
   await connectDB()
   next()
@@ -58,5 +60,5 @@ app.get('/', (req, res) => {
   res.json({ message: '✅ Serverless backend on Vercel' })
 })
 
-// Export untuk serverless
+// Export untuk serverless function
 module.exports = serverless(app)
