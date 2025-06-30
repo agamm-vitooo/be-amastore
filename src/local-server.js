@@ -16,13 +16,13 @@ app.use(cors())
 app.use(morgan('dev'))
 
 // Routes
-app.use('/api/admins', require('../src/router/admin.route'))
-app.use('/api/clients', require('../src/router/client.route'))
-app.use('/api/profile', require('../src/router/profile.route'))
-app.use('/api/categories', require('../src/router/category.route'))
-app.use('/api/products', require('../src/router/product.route'))
-app.use('/api/upload', require('../src/router/upload.avatar.route'))
-app.use('/api/upload', require('../src/router/upload.product.route'))
+app.use('/api/admins', require('./router/admin.route'))
+app.use('/api/clients', require('./router/client.route'))
+app.use('/api/profile', require('./router/profile.route'))
+app.use('/api/categories', require('./router/category.route'))
+app.use('/api/products', require('./router/product.route'))
+app.use('/api/upload', require('./router/upload.avatar.route'))
+app.use('/api/upload', require('./router/upload.product.route'))
 
 // Prometheus metrics
 client.collectDefaultMetrics()

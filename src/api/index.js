@@ -2,8 +2,8 @@ const express = require('express')
 const serverless = require('serverless-http')
 const cors = require('cors')
 const morgan = require('morgan')
-const mongoose = require('mongoose')
 const dotenv = require('dotenv')
+const connectDB = require('../lib/db')
 
 dotenv.config()
 
@@ -21,38 +21,13 @@ app.use(cors())
 app.use(morgan('dev'))
 app.use(express.json())
 
-// MongoDB connection with timeout
-let isConnected = false
-
-const connectDB = async () => {
-  if (isConnected) return
-
-  try {
-    console.time('MongoDB Connection')
-    await Promise.race([
-      mongoose.connect(process.env.MONGO_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-      }),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('⏱️ MongoDB connection timeout')), 8000)
-      )
-    ])
-    isConnected = true
-    console.timeEnd('MongoDB Connection')
-    console.log('✅ MongoDB connected')
-  } catch (err) {
-    console.error('❌ DB Error:', err.message)
-    throw err
-  }
-}
-
-// Call connectDB once before handling request
+// Connect to MongoDB before handling any request
 app.use(async (req, res, next) => {
   try {
     await connectDB()
     next()
   } catch (err) {
+    console.error('❌ DB Error:', err.message)
     res.status(500).json({ message: '❌ Failed to connect to MongoDB' })
   }
 })
